@@ -8,7 +8,11 @@ app.use(express.json());        //json 형식의 데이터를 처리할 수 있�
 app.use(cors());                //브라우저의 CORS 이슈를 막기 위해 사용하는 코드
 
 app.get("/products", (req,res) => {
-    models.Product.findAll().then((result) => {
+    models.Product.findAll({
+      // limit : 1, // 포스트로 불러오는 정보를 1개만 불러오게한다.
+        order: [["createdAt", "DESC"]],
+        attributes: ["id", "name", "price", "createdAt", "seller"],
+    }).then((result) => {
         console.log("Products :", result);
         res.send({
             products : result
@@ -74,7 +78,19 @@ app.post('/products', (req,res) => {
 app.get('/products/:id', (req,res) => {
     const params = req.params;
     const {id} = params;
-    res.send(`id는 ${params.id}입니다.`);
+    models.Product.findOne({
+        where : {
+            id : id,
+        },
+    }).then((result) => {
+        console.log("PRODUCT :", result);
+        res.send({
+            product : result,
+        });
+    }).catch((error) => {
+        console.error(error);
+        res.send("상품 조회에 에러가 발생했습니다!!");
+    });
 });
 
 //세팅한 app을 실행시킨다.
